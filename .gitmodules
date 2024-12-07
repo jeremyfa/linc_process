@@ -1,0 +1,3 @@
+[submodule "lib/tiny-process-library"]
+	path = lib/tiny-process-library
+	url = https://github.com/jeremyfa/tiny-process-library.git
