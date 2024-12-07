@@ -1,0 +1,22 @@
+<xml>
+
+    <files id='haxe'>
+
+        <compilerflag value='-I${LINC_PROCESS_PATH}../lib/tiny-process-library' />
+        <compilerflag value='-I${LINC_PROCESS_PATH}linc/' />
+
+        <file name='${LINC_PROCESS_PATH}../lib/tiny-process-library/process.cpp' />
+
+        <section if="windows">
+            <file name='${LINC_PROCESS_PATH}../lib/tiny-process-library/process_win.cpp' />
+        </section>
+
+        <section if="mac || linux">
+            <file name='${LINC_PROCESS_PATH}../lib/tiny-process-library/process_unix.cpp' />
+        </section>
+
+        <file name='${LINC_PROCESS_PATH}linc/linc_process.cpp' />
+
+    </files>
+
+</xml>
