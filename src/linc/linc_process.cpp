@@ -31,18 +31,18 @@ namespace linc {
             ProcessInfo& operator=(const ProcessInfo&) = delete;
         };
 
-        inline void queue_func(ProcessInfo& info, std::function<void()> fn) {
-            std::lock_guard<std::mutex> lock(info.funcQueueMutex);
-            info.funcQueue.push(std::move(fn));
+        inline void queue_func(ProcessInfo *info, std::function<void()> fn) {
+            std::lock_guard<std::mutex> lock(info->funcQueueMutex);
+            info->funcQueue.push(std::move(fn));
         }
 
-        inline bool pop_func(ProcessInfo& info, std::function<void()>& fn) {
-            std::lock_guard<std::mutex> lock(info.funcQueueMutex);
-            if (info.funcQueue.empty()) {
+        inline bool pop_func(ProcessInfo *info, std::function<void()>& fn) {
+            std::lock_guard<std::mutex> lock(info->funcQueueMutex);
+            if (info->funcQueue.empty()) {
                 return false;
             }
-            fn = std::move(info.funcQueue.front());
-            info.funcQueue.pop();
+            fn = std::move(info->funcQueue.front());
+            info->funcQueue.pop();
             return true;
         }
 
@@ -50,22 +50,22 @@ namespace linc {
         std::unordered_map<int, std::unique_ptr<ProcessInfo>> processes_;
         std::atomic<int> nextHandle_{1};
 
-        std::function<void()> wrap_void_func(ProcessInfo& info, ::Dynamic fn) {
+        std::function<void()> wrap_void_func(ProcessInfo *info, ::Dynamic fn) {
 
             if (hx::IsNull(fn)) return nullptr;
 
-            return [&info, fn]() {
+            return [info, fn]() {
                 queue_func(info, [fn]() {
                     fn.mPtr->__run();
                 });
             };
         }
 
-        std::function<void(const char *bytes, size_t n)> wrap_data_func(ProcessInfo& info, ::Dynamic fn) {
+        std::function<void(const char *bytes, size_t n)> wrap_data_func(ProcessInfo *info, ::Dynamic fn) {
 
             if (hx::IsNull(fn)) return nullptr;
 
-            return [&info, fn](const char *bytes, size_t n) {
+            return [info, fn](const char *bytes, size_t n) {
                 // For now, we always treat output as string
                 queue_func(info, [fn, bytes, n]() {
                     ::String str = ::String(std::string(bytes, n).c_str());
@@ -128,8 +128,8 @@ namespace linc {
             }
 
             // Wrap close handlers
-            config.on_stdout_close = wrap_void_func(*info, on_stdout_close);
-            config.on_stderr_close = wrap_void_func(*info, on_stderr_close);
+            config.on_stdout_close = wrap_void_func(info, on_stdout_close);
+            config.on_stderr_close = wrap_void_func(info, on_stderr_close);
 
             // Store strings locally to ensure they remain valid during Process construction
             std::string cmd_str(command.c_str());
@@ -139,8 +139,8 @@ namespace linc {
             info->proc = std::make_shared<TinyProcessLib::Process>(
                 cmd_str, path_str,
                 environment,
-                wrap_data_func(*info, read_stdout),
-                wrap_data_func(*info, read_stderr),
+                wrap_data_func(info, read_stdout),
+                wrap_data_func(info, read_stderr),
                 open_stdin,
                 config
             );
@@ -164,10 +164,10 @@ namespace linc {
             auto info = get_process(handle);
 
             return info->proc->tick_until_exit_status(
-                [&info, tick] {
+                [info, tick] {
                     // Flush pending callbacks
                     std::function<void()> fn;
-                    while (pop_func(*info, fn)) {
+                    while (pop_func(info, fn)) {
                         fn();
                     }
 
