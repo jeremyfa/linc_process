@@ -4,8 +4,8 @@
     "license": "MIT",
     "tags": ["process", "spawn", "linc", "cpp"],
     "description": "Haxe/hxcpp native bindings for tiny-process-library",
-    "version": "1.0.0",
-    "releasenote": "Initial working project",
+    "version": "1.0.1",
+    "releasenote": "Initial working project (with a few fixes)",
     "contributors": ["jeremyfa"],
     "classPath": "src/",
     "dependencies": {}
