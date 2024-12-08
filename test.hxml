@@ -1,0 +1,10 @@
+-cp test
+-cp src
+-D HXCPP_CPP11
+--main Main
+--cpp out
+# -D windows
+--debug
+
+# --next
+# --cmd out/Main-debug

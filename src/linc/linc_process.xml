@@ -11,7 +11,7 @@
             <file name='${LINC_PROCESS_PATH}../lib/tiny-process-library/process_win.cpp' />
         </section>
 
-        <section if="mac || linux">
+        <section unless="windows">
             <file name='${LINC_PROCESS_PATH}../lib/tiny-process-library/process_unix.cpp' />
         </section>
 

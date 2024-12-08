@@ -1,0 +1,12 @@
+{
+    "name": "tracker",
+    "url" : "https://github.com/jeremyfa/linc_process/",
+    "license": "MIT",
+    "tags": ["process", "spawn", "linc", "cpp"],
+    "description": "Haxe/hxcpp native bindings for tiny-process-library",
+    "version": "1.0.0",
+    "releasenote": "Initial working project",
+    "contributors": ["jeremyfa"],
+    "classPath": "src/",
+    "dependencies": {}
+  }
