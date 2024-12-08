@@ -1,5 +1,5 @@
 {
-    "name": "tracker",
+    "name": "linc_process",
     "url" : "https://github.com/jeremyfa/linc_process/",
     "license": "MIT",
     "tags": ["process", "spawn", "linc", "cpp"],
