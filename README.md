@@ -117,6 +117,22 @@ proc.create();
 proc.tick_until_exit_status();
 ```
 
+### Inherit stdio
+
+The process can inherit parent file descriptors (`stdout`, `stderr`).
+This can preserve terminal colors and properties.
+
+On Windows: only works when `stdin` is not opened, and there are no `read_stdout` or `read_stderr` handler.
+
+```haxe
+final proc = new Process('ls --colors');
+
+proc.inherit_file_descriptors = true;
+
+proc.create();
+proc.tick_until_exit_status();
+```
+
 ### Tick function when waiting for exit status
 
 When waiting for the process exit status, you can provide a `tick` function that will be called at regular intervals. This can be useful for performing custom processing in parallel while the process is running.
