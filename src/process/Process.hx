@@ -54,6 +54,14 @@ class Process {
     public var inherit_file_descriptors:Bool = false;
 
     /**
+     * If true, detach the process from the parent. When detaching:
+     * - On Unix: process runs in new session via setsid()
+     * - On Windows: process runs in new session via DETACHED_PROCESS
+     * Note: stdin/stdout/stderr callbacks won't work with detached processes
+     */
+    public var detach_process:Bool = false;
+
+    /**
      * Buffer size for reading stdout and stderr. Default is 131072 (128 kB).
      */
     public var buffer_size:Int = 131072;
@@ -74,6 +82,11 @@ class Process {
      * The handle referencing the native process.
      */
     public var handle(default,null):Int = -1;
+
+    /**
+     * If true, this process will inherit environment variables of the parent.
+     */
+    public var inherit_env:Bool = true;
 
     /**
      * Creates a new Process instance.
@@ -108,14 +121,27 @@ class Process {
             }
         }
 
+        var finalEnv = new Map<String,String>();
+        if (inherit_env) {
+            for (key => val in Sys.environment()) {
+                finalEnv.set(key, val);
+            }
+        }
+        if (env != null) {
+            for (key => val in env) {
+                finalEnv.set(key, val);
+            }
+        }
+
         handle = Process_Extern.create_process(
             cmd.toString(),
             cwd ?? Sys.getCwd(),
-            env,
+            finalEnv,
             read_stdout,
             read_stderr,
             open_stdin,
             inherit_file_descriptors,
+            detach_process,
             buffer_size,
             on_stdout_close,
             on_stderr_close
@@ -237,6 +263,7 @@ class Process {
         read_stderr:(data:String)->Void,
         open_stdin:Bool,
         inherit_file_descriptors:Bool,
+        detach_process:Bool,
         buffer_size:Int,
         on_stdout_close:()->Void,
         on_stderr_close:()->Void

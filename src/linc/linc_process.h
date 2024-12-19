@@ -18,6 +18,7 @@ namespace linc {
             ::Dynamic read_stderr,
             bool open_stdin,
             bool inherit_file_descriptors,
+            bool detach_process,
             int buffer_size,
             ::Dynamic on_stdout_close,
             ::Dynamic on_stderr_close

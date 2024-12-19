@@ -9,11 +9,14 @@
 #include <atomic>
 #include <memory>
 #include <queue>
+#include <csignal>
 #include <stdexcept>
 
 namespace linc {
 
     namespace process {
+
+        static bool bound_signal_handler = false;
 
         struct ProcessInfo {
             // Process
@@ -22,6 +25,9 @@ namespace linc {
             // Function queue
             std::queue<std::function<void()>> funcQueue;
             mutable std::mutex funcQueueMutex;
+
+            // Detached
+            bool detached;
 
             // Default constructor
             ProcessInfo() = default;
@@ -74,6 +80,24 @@ namespace linc {
             };
         }
 
+        static void signal_handler(int signal) {
+            if (signal == SIGINT || signal == SIGTERM) {
+                std::lock_guard<std::mutex> lock(mapMutex_);
+                for (auto it = processes_.begin(); it != processes_.end(); ++it) {
+                    if(it->second && !it->second->detached && it->second->proc) {
+                        #ifdef _WIN32
+                        it->second->proc->kill();
+                        #else
+                        it->second->proc->kill(true);
+                        #endif
+                    }
+                }
+                // After cleanup, restore default handler and re-raise signal
+                std::signal(signal, SIG_DFL);
+                std::raise(signal);
+            }
+        }
+
         int create_process(
             ::String command,
             ::String path,
@@ -82,10 +106,18 @@ namespace linc {
             ::Dynamic read_stderr,
             bool open_stdin,
             bool inherit_file_descriptors,
+            bool detach_process,
             int buffer_size,
             ::Dynamic on_stdout_close,
             ::Dynamic on_stderr_close
         ) {
+            // Bind signal handler if needed
+            if (!bound_signal_handler) {
+                bound_signal_handler = true;
+                std::signal(SIGINT, signal_handler);
+                std::signal(SIGTERM, signal_handler);
+            }
+
             // Get next handle
             int handle = nextHandle_++;
 
@@ -95,10 +127,14 @@ namespace linc {
                 config.buffer_size = buffer_size;
             }
             config.inherit_file_descriptors = inherit_file_descriptors;
+            config.detach_process = detach_process;
 
             // Create process info on heap
             std::unique_ptr<ProcessInfo> info_ptr(new ProcessInfo());
             ProcessInfo* info = info_ptr.get();
+
+            // Keep some flags for later use
+            info->detached = detach_process;
 
             // Store in map
             {
