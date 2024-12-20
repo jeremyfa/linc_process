@@ -112,7 +112,7 @@ class Process {
             for (i in 0...arguments.length) {
                 var arg = arguments[i];
                 #if windows
-                arg = haxe.SysTools.quoteWinArg(arg);
+                arg = haxe.SysTools.quoteWinArg(arg, true);
                 #else
                 arg = haxe.SysTools.quoteUnixArg(arg);
                 #end

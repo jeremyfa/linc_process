@@ -73,8 +73,9 @@ namespace linc {
 
             return [info, fn](const char *bytes, size_t n) {
                 // For now, we always treat output as string
-                queue_func(info, [fn, bytes, n]() {
-                    ::String str = ::String(std::string(bytes, n).c_str());
+                std::string data(bytes, n);
+                queue_func(info, [fn, data]() {
+                    ::String str = ::String(data.c_str());
                     fn.mPtr->__run(str);
                 });
             };
