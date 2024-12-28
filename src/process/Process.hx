@@ -97,7 +97,9 @@ class Process {
         this.cwd = cwd;
         this.env = env ?? new Map();
 
+        #if !cppia
         cpp.vm.Gc.setFinalizer(this, cpp.Function.fromStaticFunction(_finalize));
+        #end
     }
 
     /**
