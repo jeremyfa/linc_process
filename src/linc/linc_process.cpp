@@ -243,13 +243,15 @@ namespace linc {
         }
 
         #ifndef _WIN32
-
         void signal(int handle, int signum) {
             auto info = get_process(handle);
-
             info->proc->signal(signum);
         }
-
+        #else
+        void signal(int handle, int signum) {
+            // The #ifndef kills the compiler on Windows, so I added this failsafe.
+            // Hope ya don't mind. :P
+        }
         #endif
 
     }

@@ -36,12 +36,9 @@ namespace linc {
 
         extern void kill(int handle, bool force);
 
-        #ifndef _WIN32
-
+        // The #ifndef kills the compiler on Windows, so I removed it.
+        // Hope ya don't mind. :P
         extern void signal(int handle, int signum);
-
-        #endif
-
     }
 
 }
